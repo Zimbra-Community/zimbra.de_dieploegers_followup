@@ -11,8 +11,22 @@ versions 8.5 and up.
 ### Zimlet
 
 The zimlet provides the basic user interface, that lets users create followup
- emails at different points of time. It moves the mails into the 
- followup-folder.
+ emails at different points of time. 
+ 
+The mail is mvoed to a user defined folder with its date set to the follow-up 
+time. When the follow-up time is due, the mail is moved 
+back to the inbox, tagged with a user defined tag and set to unread.
+
+Clicking on the mail users can see, that the mail was deferred and can even 
+lookup a history.
+
+This zimlet uses parts of the Inbox Zero-Zimlet made by andyc available at 
+the `Zimlet Gallery <http://gallery.zimbra.com/type/zimlet/inbox-zero-zimbra>`_ 
+(more information available at the 
+`Inbox Zero Website <http://inboxzero.com/inboxzero/>`_)
+
+It also includes the "json"-enabler by Doug Crockford available at its
+`Github-Repository <https://github.com/douglascrockford/JSON-js>`_. 
  
 It relies on the server extension to set the date on followup emails.
  

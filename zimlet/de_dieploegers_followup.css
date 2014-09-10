@@ -1,0 +1,65 @@
+/* 
+    Document   : eu_zedach_emaildefer.css
+    Created on : 20120109
+    Author     : Dennis Ploeger <dennis.ploeger@zedach.eu>
+    Description:
+        Defer an email until a certain point in time, move it into a
+        folder. Later move it back to inbox.
+*/
+
+.de_dieploegers_followup_additionalproperties .DwtInputField-disabled {
+	
+	float: left;
+	
+}
+
+.de_dieploegers_followup_additionalproperties .DwtInputField-disabled + .ZButton {
+	
+	float: right;
+	
+}
+
+.eu_zeadch_emaildeferInfoPane {
+	
+	height: 5em;
+	
+}
+
+.eu_zedach_emaildeferInfoPane .DeferInfoPaneLogo {
+	
+	float: left;
+	margin-top: 1em;
+	margin-left: 2em;
+	margin-right: 2em;
+
+}
+
+.eu_zedach_emaildeferInfoPane .DeferInfoPane {
+	
+	margin-left: 6em;
+	
+}
+
+#eu_zedach_emaildeferInfoPaneRemoveTag {
+	
+	float: left;
+	
+}
+
+#eu_zedach_emaildeferInfoPaneShowLog {
+	
+	float: left;
+	
+}
+
+#eu_zedach_emaildeferInfoPaneClose {
+	
+	float: right;
+	
+}
+
+.eu_zedach_emaildeferInfoPaneClearer {
+	
+	clear: both;
+	
+}
