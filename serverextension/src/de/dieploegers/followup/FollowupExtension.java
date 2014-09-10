@@ -16,7 +16,7 @@ public class FollowupExtension implements ZimbraExtension{
     /**
      * Returns the name of this extension
      *
-     * @return
+     * @return Name
      */
     @Override
     public String getName() {
@@ -32,7 +32,7 @@ public class FollowupExtension implements ZimbraExtension{
     @Override
     public void init() throws ExtensionException, ServiceException {
 
-        SoapServlet.addService("FollowupService", new FollowupDocumentService
+        SoapServlet.addService("SoapServlet", new FollowupDocumentService
             ());
 
     }

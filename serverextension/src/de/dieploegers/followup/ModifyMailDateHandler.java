@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Change the date of a given mail.
  *
- * <ModifyMailDateRequest>
+ * <ModifyMailDateRequest xmlns="urn:followup">
  *     <!-- The mail to modify -->
  *     <m id="{item-id}" d="{new date as epoch} />
  * </ModifyMailDateRequest>
@@ -77,7 +77,14 @@ public class ModifyMailDateHandler extends FollowupDocumentHandler {
             MailItem.Type.MESSAGE);
 
         m.addAttribute(MailConstants.A_ID, newItem.getId());
-        m.addAttribute(MailConstants.A_DATE, newItem.getDate());
+
+        /**
+         * Zimbra internally removes the milliseconds. So for the response,
+         * we add them back.
+         */
+
+        m.addAttribute(MailConstants.A_DATE, newItem.getDate() + newDate %
+            1000);
 
         return response;
 
