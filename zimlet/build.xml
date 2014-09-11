@@ -77,6 +77,12 @@ Needs jsch-libraries for the deployment task.
 
         </scp>
 
+    </target>
+
+    <target name="deploy_dev_flush"
+            description="Deploys the zimlet to a development server and flushes the uistrings cache"
+            depends="deploy_dev">
+
         <!-- Flush caches -->
 
         <sshexec host="${deploy.host}" username="${deploy.user}"
@@ -96,12 +102,6 @@ Needs jsch-libraries for the deployment task.
                  command="zmzimletctl deploy ${deploy.tmppath}/${build.zipfile}"
                  keyfile="${deploy.keyfile}"
         />
-
-        <!-- Flush caches -->
-
-        <sshexec host="${deploy.host}" username="${deploy.user}"
-                 command="zmprov fc uistrings" failonerror="false"
-                 keyfile="${deploy.keyfile}"/>
 
     </target>
 

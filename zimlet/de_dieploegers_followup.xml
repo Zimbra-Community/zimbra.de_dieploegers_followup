@@ -9,7 +9,7 @@
 -->
 
 <zimlet name="de_dieploegers_followup" version="1.0"
-        description="">
+        description="${msg.ZIMLETDESCRIPTION}">
   <include>de_dieploegers_followup.js</include>
   <includeCSS>de_dieploegers_followup.css</includeCSS>
   <include>json2_min.js</include>
