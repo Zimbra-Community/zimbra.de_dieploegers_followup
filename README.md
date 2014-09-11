@@ -84,3 +84,27 @@ Run "ant" to just build the extension's jar-file.
 
 Use "ant deployrestart" to also deploy the jar file to your zimbra server and
  restart the mailbox daemon. (Leave out "restart" if you don't want to restart)
+ 
+## Converting from eu_zedach_emaildefer
+
+This zimlet is a fork of eu_zedach_emaildefer, which is abandoned. If you're
+already using that zimlet, you can copy the user properties to the new zimlet
+by calling the following lines as zimbra-user on your zimbra server:
+
+    for USER in `zmprov -l gaa`
+    do
+      zmprov ma $USER `zmprov -z ga $USER | grep eu_zedach_emaildefer | sed -re "s/: / /gi" | sed -re "s/eu_zedach_emaildefer/de_deploegers_followup/gi" | paste -d " " -s`
+    done
+    
+(There may be errors for users, that haven't set up the 
+eu_zedach_emaildefer-zimlet!)
+
+If all works and you'd like to remove the old eu_zedach_emaildefer 
+properties, run this script:
+
+    for USER in `zmprov -l gaa`
+    do
+      zmprov ma $USER `zmprov -z ga $USER | grep eu_zedach_emaildefer | sed -re "s/^/-/gi" | sed -re "s/: / /gi" | paste -d " " -s`
+    done
+    
+Again, there may be errors.
