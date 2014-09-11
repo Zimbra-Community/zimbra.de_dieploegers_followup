@@ -7,7 +7,10 @@ Needs jsch-libraries for the deployment tasks.
 
 -->
 
-<project name="de.dieploegers.followup" default="jar">
+<project name="Serverextension" default="jar">
+
+    <description>Building and deployment of a Zimbra Server
+        extension</description>
 
     <!-- Read in site properties -->
 
@@ -21,9 +24,10 @@ Needs jsch-libraries for the deployment tasks.
 
     <property name="project.manifest" value="conf/MANIFEST.MF"/>
     <property name="build.dir" value="build" />
+    <property name="dist.name" value="de.dieploegers.followup" />
     <property name="dist.dir" value="dist" />
     <property name="dist.jarfile"
-              value="${dist.dir}/${ant.project.name}.jar"/>
+              value="${dist.dir}/${dist.name}.jar"/>
 
     <!-- Zimbra properties -->
 
