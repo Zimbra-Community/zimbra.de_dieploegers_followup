@@ -324,7 +324,7 @@ function (message, deferPIT, originalDate, ev) {
         messageBody,
         messageBox, metaData;
 
-    if (!ev.success) {
+    if (ev.isException()) {
 
         // Changing the date via JSP failed. Show error message
 
@@ -1578,28 +1578,25 @@ function (message, deferCount, deferPIT) {
 
     }
 
-    // Call JSP to set date
+    // Call Server extension to set date
 
-    url = [
-        this.getResource("SetMessageDateFoReelz.jsp"),
-        "?",
-        "itemId=", message.id,
-        "&",
-        "date=", deferPIT
-    ].join("");
+    var soapDoc = AjxSoapDoc.create("ModifyMailDateRequest", "urn:followup");
+
+    m = soapDoc.set("m");
+    m.setAttribute("id", message.id)
+    m.setAttribute("d", deferPIT);
 
     originalDate = new Date(message.date);
 
-    AjxRpc.invoke(
-        "",
-        url,
-        [],
-        new AjxCallback(
+    appCtxt.getAppController().sendRequest({
+        soapDoc: soapDoc,
+        asyncMode: true,
+        callback: new AjxCallback(
             this,
             this.deferMove,
             [ message, deferPIT, originalDate ]
         )
-    );
+    });
 
 };
 
