@@ -3,48 +3,50 @@
     Document   : de_dieploegers_followup.js
     Author     : Dennis Plöger <develop@dieploegers.de>
     Description:
-        Defer an email until a certain point in time, move it into a
+        Set an email to followup until a certain point in time, move it into a
         folder. Later move it back to inbox.
 */
 
 /**
- * Available defer types
+ * Available followup types
  */
 
-de_dieploegers_followupHandlerObject.deferTypes = {
+de_dieploegers_followupHandlerObject.followupTypes = {
 
-    "DEFER_1HOUR": {
-        textKey: "MENU_DEFER_1HOUR",
-        imageKey: "MENU_DEFER_1HOUR_IMAGE",
-        toolTipKey : "MENU_DEFER_1HOUR_TOOLTIP",
+    "FOLLOWUP_1HOUR": {
+        textKey: "MENU_FOLLOWUP_1HOUR",
+        imageKey: "MENU_FOLLOWUP_1HOUR_IMAGE",
+        toolTipKey : "MENU_FOLLOWUP_1HOUR_TOOLTIP",
         counter: 3600
     },
 
-    "DEFER_1DAY": {
-        textKey: "MENU_DEFER_1DAY",
-        imageKey: "MENU_DEFER_1DAY_IMAGE",
-        toolTipKey : "MENU_DEFER_1DAY_TOOLTIP",
+    "FOLLOWUP_1DAY": {
+        textKey: "MENU_FOLLOWUP_1DAY",
+        imageKey: "MENU_FOLLOWUP_1DAY_IMAGE",
+        toolTipKey : "MENU_FOLLOWUP_1DAY_TOOLTIP",
         counter: 86400
     },
 
-    "DEFER_1WEEK": {
-        textKey: "MENU_DEFER_1WEEK",
-        imageKey: "MENU_DEFER_1WEEK_IMAGE",
-        toolTipKey : "MENU_DEFER_1WEEK_TOOLTIP",
+    "FOLLOWUP_1WEEK": {
+        textKey: "MENU_FOLLOWUP_1WEEK",
+        imageKey: "MENU_FOLLOWUP_1WEEK_IMAGE",
+        toolTipKey : "MENU_FOLLOWUP_1WEEK_TOOLTIP",
         counter: 604800
     },
 
-    "DEFER_UNTIL": {
-        textKey: "MENU_DEFER_UNTIL",
-        detailKey: "MENU_DEFER_UNTILDETAIL",
-        imageKey: "MENU_DEFER_UNTIL_IMAGE",
-        toolTipKey : "MENU_DEFER_UNTIL_TOOLTIP",
+    "FOLLOWUP_UNTIL": {
+        textKey: "MENU_FOLLOWUP_UNTIL",
+        detailKey: "MENU_FOLLOWUP_UNTILDETAIL",
+        imageKey: "MENU_FOLLOWUP_UNTIL_IMAGE",
+        toolTipKey : "MENU_FOLLOWUP_UNTIL_TOOLTIP",
         counter: 0
     }
 
 };
 
-//Create zimlet handler object
+/**
+ * Create zimlet handler
+ */
 
 function de_dieploegers_followupHandlerObject() {
 }
@@ -54,35 +56,35 @@ de_dieploegers_followupHandlerObject.prototype.constructor =
     de_dieploegers_followupHandlerObject;
 
 /**
- * Create metadata for deferred mail
+ * Create metadata for the followup mail
  *
- * @param message      The ZmMailMsg object of the deferred mail
- * @param deferPIT     The point of time for deferring the mail
+ * @param message      The ZmMailMsg object of the followupred mail
+ * @param followupPIT     The point of time for followup mail
  * @param originalDate The original date of the mail
  */
 
 de_dieploegers_followupHandlerObject.prototype.createMetaData =
-function(message, deferPIT, originalDate) {
+function(message, followupPIT, originalDate) {
 
-    var deferMetadata,
+    var followupMetadata,
         metadata;
 
-    deferMetadata = {};
+    followupMetadata = {};
 
     // Set original date
 
-    deferMetadata.originalDate = originalDate.getTime();
+    followupMetadata.originalDate = originalDate.getTime();
 
     // Initialize the log
 
-    deferMetadata.log = JSON.stringify([{
+    followupMetadata.log = JSON.stringify([{
         at: new Date().getTime(),
-        until: deferPIT
+        until: followupPIT
     }]);
 
     metadata = new ZmMetaData(appCtxt.getActiveAccount(), message.id);
 
-    metadata.set("de_dieploegers_followup", deferMetadata);
+    metadata.set("de_dieploegers_followup", followupMetadata);
 
 };
 
@@ -96,11 +98,11 @@ de_dieploegers_followupHandlerObject.prototype.init = function () {
 
     // Load up user properties
 
-    this.deferFolderId = this.getUserProperty("deferFolderId");
-    this.deferFolderName = this.getUserProperty("deferFolderName");
-    this.deferTagId = this.getUserProperty("deferTagId");
-    this.deferTagName = this.getUserProperty("deferTagName");
-    this.lastUsedDefer = this.getUserProperty("lastUsedDefer");
+    this.followupFolderId = this.getUserProperty("followupFolderId");
+    this.followupFolderName = this.getUserProperty("followupFolderName");
+    this.followupTagId = this.getUserProperty("followupTagId");
+    this.followupTagName = this.getUserProperty("followupTagName");
+    this.lastUsedFollowup = this.getUserProperty("lastUsedFollowup");
     this.lastUsedPIT = this.getUserProperty("lastUsedPIT");
     this.showInfoPane = this.getUserProperty("showInfoPane");
     this.useSmallIcon = this.getUserProperty("useSmallIcon");
@@ -127,26 +129,28 @@ de_dieploegers_followupHandlerObject.prototype.init = function () {
 
     }
 
-    if ((!this.lastUsedDefer) ||
-        (!de_dieploegers_followupHandlerObject.deferTypes.hasOwnProperty(
-                this.lastUsedDefer
+    // Set default value to the first non-"defer until"-followup type
+
+    if ((!this.lastUsedFollowup) ||
+        (!de_dieploegers_followupHandlerObject.followupTypes.hasOwnProperty(
+                this.lastUsedFollowup
             )
         )
     ) {
 
-        for (tmpKey in de_dieploegers_followupHandlerObject.deferTypes) {
+        for (tmpKey in de_dieploegers_followupHandlerObject.followupTypes) {
 
-            if (de_dieploegers_followupHandlerObject.deferTypes.hasOwnProperty(
+            if (de_dieploegers_followupHandlerObject.followupTypes.hasOwnProperty(
                     tmpKey
                 )
             ) {
 
-                if (de_dieploegers_followupHandlerObject.deferTypes[
+                if (de_dieploegers_followupHandlerObject.followupTypes[
                         tmpKey
                     ].counter > 0
                 ) {
 
-                    this.lastUsedDefer = tmpKey;
+                    this.lastUsedFollowup = tmpKey;
                     break;
 
                 }
@@ -155,7 +159,7 @@ de_dieploegers_followupHandlerObject.prototype.init = function () {
 
         }
 
-        this.setUserProperty("lastUsedDefer", this.lastUsedDefer, true);
+        this.setUserProperty("lastUsedFollowup", this.lastUsedFollowup, true);
 
     }
 
@@ -170,16 +174,16 @@ de_dieploegers_followupHandlerObject.prototype.init = function () {
 };
 
 /**
- * Start deferring messages (After clicking on the defer-menu or after
+ * Set followup for messages (After clicking on the followup-menu or after
  * selecting a point in time)
  *
  * @param ev DwtEvent of the click
  */
 
-de_dieploegers_followupHandlerObject.prototype.deferMessages =
+de_dieploegers_followupHandlerObject.prototype.followupMessages =
 function (ev) {
 
-    var deferCounter,
+    var followupCounter,
         i,
         parsedDate,
         pITDate,
@@ -215,8 +219,8 @@ function (ev) {
             this.toolbarButton.setText(
                 AjxMessageFormat.format(
                     this.getMessage(
-                        de_dieploegers_followupHandlerObject.deferTypes[
-                            this.lastUsedDefer
+                        de_dieploegers_followupHandlerObject.followupTypes[
+                            this.lastUsedFollowup
                         ].detailKey
                     ),
                     [
@@ -229,11 +233,11 @@ function (ev) {
 
         // Update toolbar items with last used PIT
 
-        this.toolbarMenuItems[this.lastUsedDefer].setText(
+        this.toolbarMenuItems[this.lastUsedFollowup].setText(
             AjxMessageFormat.format(
                 this.getMessage(
-                    de_dieploegers_followupHandlerObject.deferTypes[
-                        this.lastUsedDefer
+                    de_dieploegers_followupHandlerObject.followupTypes[
+                        this.lastUsedFollowup
                     ].detailKey
                 ),
                 [
@@ -243,13 +247,13 @@ function (ev) {
         );
 
         this.toolbarButton.setData(
-            "de_dieploegers_followupDeferKey",
-            this.lastUsedDefer
+            "de_dieploegers_followupFollowupKey",
+            this.lastUsedFollowup
         );
 
         this.setUserProperty("lastUsedPIT", this.lastUsedPIT, true);
 
-        deferCounter = 0;
+        followupCounter = 0;
 
     } else {
 
@@ -259,8 +263,8 @@ function (ev) {
 
             this.toolbarButton.setText(
                 this.getMessage(
-                    de_dieploegers_followupHandlerObject.deferTypes[
-                        this.lastUsedDefer
+                    de_dieploegers_followupHandlerObject.followupTypes[
+                        this.lastUsedFollowup
                     ].textKey
                 )
             );
@@ -268,15 +272,15 @@ function (ev) {
         }
 
         this.toolbarButton.setData(
-            "de_dieploegers_followupDeferKey",
-            this.lastUsedDefer
+            "de_dieploegers_followupFollowupKey",
+            this.lastUsedFollowup
         );
 
-        deferCounter = ev;
+        followupCounter = ev;
 
     }
 
-    // Defer selected messages
+    // Set followup for selected messages
 
     selectedMessages =
         appCtxt.getCurrentApp().getMailListController().getSelection();
@@ -288,17 +292,21 @@ function (ev) {
 
         if (selectedMessages[i].type == ZmId.ITEM_CONV) {
 
-            // Set defer on first hot message
+            // Set followup on first hot message
 
-            this.setDefer(
+            this.setFollowup(
                 selectedMessages[i].getFirstHotMsg(),
-                deferCounter,
+                followupCounter,
                 this.lastUsedPIT
             );
 
         } else {
 
-            this.setDefer(selectedMessages[i], deferCounter, this.lastUsedPIT);
+            this.setFollowup(
+                selectedMessages[i],
+                followupCounter,
+                this.lastUsedPIT
+            );
 
         }
 
@@ -307,33 +315,33 @@ function (ev) {
 };
 
 /**
- * Callback after changing the date of a message to defer
+ * Callback after changing the date of a message to followup
  *
- * @param message      The ZmMailMsg Object of the message to defer
- * @param deferPIT     Point in time to defer the message
+ * @param message      The ZmMailMsg Object of the message to followup
+ * @param followupPIT     Point in time to followup the message
  * @param originalDate Original date of the mail
  * @param ev           DwtEvent from the listener/callback
  */
 
-de_dieploegers_followupHandlerObject.prototype.deferMove =
-function (message, deferPIT, originalDate, ev) {
+de_dieploegers_followupHandlerObject.prototype.followupMove =
+function (message, followupPIT, originalDate, ev) {
 
     var controller,
-        deferred,
+        followupFolder,
         detailString,
         messageBody,
         messageBox, metaData;
 
     if (ev.isException()) {
 
-        // Changing the date via JSP failed. Show error message
+        // Changing the date via SOAP request failed. Show error message
 
         messageBox = appCtxt.getErrorDialog();
 
         messageBox.setMessage(
-            this.getMessage("ERROR_DEFERFAILURE"),
+            this.getMessage("ERROR_FOLLOWUPFAILURE"),
             DwtMessageDialog.CRITICAL_STYLE,
-            this.getMessage("ERROR_DEFERFAILURE_TITLE")
+            this.getMessage("ERROR_FOLLOWUPFAILURE_TITLE")
         );
 
         messageBody = message.getBodyContent();
@@ -345,7 +353,7 @@ function (message, deferPIT, originalDate, ev) {
         }
 
         detailString = AjxMessageFormat.format(
-            this.getMessage("ERROR_DEFERFAILURE_DETAIL"),
+            this.getMessage("ERROR_FOLLOWUPFAILURE_DETAIL"),
             [
                 message.getAddress(AjxEmailAddress.FROM),
                 message.getAddresses(AjxEmailAddress.TO).join(", "),
@@ -365,20 +373,20 @@ function (message, deferPIT, originalDate, ev) {
 
     }
 
-    deferred = appCtxt.getById(this.deferFolderId);
+    followupFolder = appCtxt.getById(this.followupFolderId);
 
     // HACK: needed to ensure current list updates to next message
     controller = appCtxt.getCurrentController();
     controller._listView[controller._currentView]._itemToSelect =
         controller._getNextItemToSelect();
 
-    // Untag items, if they have the "Returned from defer"-tag set.
+    // Untag items, if they have the "Returned from followup"-tag set.
 
-    if (message.hasTag(this.deferTagName)) {
+    if (message.hasTag(this.followupTagName)) {
 
         message.list.tagItems({
             items: message,
-            tagName: this.deferTagName,
+            tagName: this.followupTagName,
             doTag: false
         });
 
@@ -394,7 +402,7 @@ function (message, deferPIT, originalDate, ev) {
         new AjxCallback(
             this,
             this.updateMetaData,
-            Array(message, deferPIT, originalDate)
+            Array(message, followupPIT, originalDate)
         )
     );
 
@@ -402,10 +410,10 @@ function (message, deferPIT, originalDate, ev) {
 
     message.list.moveItems({
         items: message,
-        folder: deferred,
+        folder: followupFolder,
         callback: new AjxCallback(
             this,
-            this.handleDeferCallback,
+            this.handleFollowupCallback,
             Array(message)
         )
     });
@@ -426,11 +434,11 @@ function (canvas) {
 /**
  * Callback after the message has been moved into the subfolder
  *
- * @param message The ZmMailMsg of the deferred mail
+ * @param message The ZmMailMsg of the followup mail
  * @param ev      DwtEvent from the callback
  */
 
-de_dieploegers_followupHandlerObject.prototype.handleDeferCallback =
+de_dieploegers_followupHandlerObject.prototype.handleFollowupCallback =
 function (message, ev) {
 
     var detailString,
@@ -446,9 +454,9 @@ function (message, ev) {
         messageBox = appCtxt.getErrorDialog();
 
         messageBox.setMessage(
-            this.getMessage("ERROR_DEFERFAILURE"),
+            this.getMessage("ERROR_FOLLOWUPFAILURE"),
             DwtMessageDialog.CRITICAL_STYLE,
-            this.getMessage("ERROR_DEFERFAILURE_TITLE")
+            this.getMessage("ERROR_FOLLOWUPFAILURE_TITLE")
         );
 
         messageBody = message.getBodyContent();
@@ -460,7 +468,7 @@ function (message, ev) {
         }
 
         detailString = AjxMessageFormat.format(
-            this.getMessage("ERROR_DEFERFAILURE_DETAIL"),
+            this.getMessage("ERROR_FOLLOWUPFAILURE_DETAIL"),
             [
                 message.getAddress(AjxEmailAddress.FROM),
                 message.getAddresses(AjxEmailAddress.TO).join(", "),
@@ -485,7 +493,7 @@ function (message, ev) {
     if (this.messageReturned < this.messageCount) {
 
         statusMessage = AjxMessageFormat.format(
-            this.getMessage("LABEL_DEFERRINGMESSAGES"),
+            this.getMessage("LABEL_FOLLOWUPMESSAGES"),
             [
                 this.messageReturned,
                 this.messageCount
@@ -500,7 +508,7 @@ function (message, ev) {
     } else {
 
         appCtxt.setStatusMsg({
-            msg: this.getMessage("LABEL_DEFERDONE"),
+            msg: this.getMessage("LABEL_FOLLOWUPDONE"),
             level: ZmStatusView.LEVEL_INFO
         });
 
@@ -509,7 +517,7 @@ function (message, ev) {
 };
 
 /**
- * Handle the click on the defer-actions in the menubar
+ * Handle the click on the followup-actions in the menubar
  *
  * @param ev DwtEvent of the click
  */
@@ -519,8 +527,8 @@ function (ev) {
 
     var chooserComposite,
         chooserLabel,
-        deferKey,
-        deferCounter,
+        followupKey,
+        followupCounter,
         firstDayOfWeek,
         messageBox,
         serverId,
@@ -536,23 +544,23 @@ function (ev) {
 
     }
 
-    deferKey = ev.item.getData("de_dieploegers_followupDeferKey");
-    deferCounter = de_dieploegers_followupHandlerObject.deferTypes[
-                       deferKey
-                   ].counter;
+    followupKey = ev.item.getData("de_dieploegers_followupFollowupKey");
+    followupCounter =
+        de_dieploegers_followupHandlerObject.followupTypes[followupKey].counter;
 
-    this.lastUsedDefer = deferKey;
+    this.lastUsedFollowup = followupKey;
 
-    this.setUserProperty("lastUsedDefer", this.lastUsedDefer, true);
+    this.setUserProperty("lastUsedFollowup", this.lastUsedFollowup, true);
 
     /**
      * Check, if destination folder exists or otherwise show messagebox
      * and lead user to preferences pane.
      */
 
-    if (!appCtxt.getFolderTree().getById(this.deferFolderId)) {
+    if (!appCtxt.getFolderTree().getById(this.followupFolderId)) {
 
         messageBox = appCtxt.getMsgDialog();
+        messageBox.reset();
 
         messageBox.setMessage(
             this.getMessage("ERROR_NOFOLDER"),
@@ -578,9 +586,10 @@ function (ev) {
      * lead user to preferences pane.
      */
 
-    if (!appCtxt.getTagTree().getByName(this.deferTagName)) {
+    if (!appCtxt.getTagTree().getByName(this.followupTagName)) {
 
         messageBox = appCtxt.getMsgDialog();
+        messageBox.reset();
 
         messageBox.setMessage(
             this.getMessage("ERROR_NOTAG"),
@@ -600,9 +609,9 @@ function (ev) {
         return false;
     }
 
-    // Handle "Defer until..." clicks to select a date
+    // Handle "Followup until..." clicks to select a date
 
-    if (deferCounter === 0) {
+    if (followupCounter === 0) {
 
         if (!this.calendarChooserDialog) {
 
@@ -689,14 +698,14 @@ function (ev) {
                 DwtDialog.OK_BUTTON,
                 new AjxListener(
                     this,
-                    this.deferMessages
+                    this.followupMessages
                 )
 
             );
 
         }
 
-        // First select the date, then defer the messages
+        // First select the date, then followup the messages
 
         this.calendarChooserDialog.popup();
 
@@ -704,9 +713,9 @@ function (ev) {
 
     }
 
-    // Defer the messages
+    // Followup the messages
 
-    this.deferMessages(deferCounter);
+    this.followupMessages(followupCounter);
 
 };
 
@@ -721,11 +730,12 @@ function (ev) {
 de_dieploegers_followupHandlerObject.prototype.handleMetaDataLoad =
 function (msg, msgView, result) {
 
-    var deferMetaData,
+    var followupMetaData,
         el,
         infoPane,
         infoPaneText,
-        response, infoPaneToolbar, closePane, showLog, removeTag, infoPaneLabel, origDate;
+        response,
+        infoPaneToolbar, closePane, showLog, removeTag, infoPaneLabel, origDate;
 
     // Did we get any metadata?
 
@@ -736,11 +746,11 @@ function (msg, msgView, result) {
 
         if (response.meta && response.meta[0]) {
 
-            deferMetaData = response.meta[0]._attrs;
+            followupMetaData = response.meta[0]._attrs;
 
         } else {
 
-            // Message hasn't been deferred
+            // Message isn't set to followup
 
             return;
 
@@ -800,7 +810,7 @@ function (msg, msgView, result) {
         new AjxListener(
             this,
             this.handleShowLog,
-            deferMetaData.log
+            followupMetaData.log
         )
     );
 
@@ -812,7 +822,7 @@ function (msg, msgView, result) {
         AjxMessageFormat.format(
             this.getMessage("INFOPANE_REMOVETAG"),
             [
-                this.deferTagName
+                this.followupTagName
             ]
         )
     );
@@ -827,7 +837,7 @@ function (msg, msgView, result) {
         )
     );
 
-    if (!msg.hasTag(this.deferTagName)) {
+    if (!msg.hasTag(this.followupTagName)) {
 
         removeTag.setEnabled(false);
 
@@ -855,11 +865,11 @@ function (msg, msgView, result) {
         [
             AjxDateFormat.format(
                 I18nMsg.formatDateShort,
-                new Date(Number(deferMetaData.originalDate))
+                new Date(Number(followupMetaData.originalDate))
             ),
             AjxDateFormat.format(
                 I18nMsg.formatTimeMedium,
-                new Date(Number(deferMetaData.originalDate))
+                new Date(Number(followupMetaData.originalDate))
             )
         ]
     );
@@ -890,11 +900,11 @@ function (msg, msgView, result) {
 de_dieploegers_followupHandlerObject.prototype.handleRemoveTag =
 function (message, removeTag, ev) {
 
-    if (message.hasTag(this.deferTagName)) {
+    if (message.hasTag(this.followupTagName)) {
 
         message.list.tagItems({
             items: message,
-            tagName: this.deferTagName,
+            tagName: this.followupTagName,
             doTag: false
         });
 
@@ -918,12 +928,12 @@ function (ev) {
 
     // Simply reuse the ChooseFolderDialog
 
-    this.chooseDeferFolder = appCtxt.getChooseFolderDialog();
+    this.chooseFollowupFolder = appCtxt.getChooseFolderDialog();
 
     // Show only folders
 
     treeIdsParam = {};
-    treeIdsParam.deferFolder = [ ZmOrganizer.FOLDER ];
+    treeIdsParam.followupFolder = [ ZmOrganizer.FOLDER ];
 
     omitParam = {};
 
@@ -934,12 +944,12 @@ function (ev) {
     omitParam[ZmFolder.ID_SENT] = true;
     omitParam[ZmFolder.ID_DRAFTS] = true;
 
-    this.chooseDeferFolder.popup({
+    this.chooseFollowupFolder.popup({
 
         treeIds: treeIdsParam,
-        overviewId: this.chooseDeferFolder.getOverviewId(ZmApp.MAIL),
-        title: this.getMessage("DIALOG_SELECTDEFERFOLDER_TITLE"),
-        description: this.getMessage("DIALOG_SELECTDEFERFOLDER_DESCRIPTION"),
+        overviewId: this.chooseFollowupFolder.getOverviewId(ZmApp.MAIL),
+        title: this.getMessage("DIALOG_SELECTFOLLOWUPFOLDER_TITLE"),
+        description: this.getMessage("DIALOG_SELECTFOLLOWUPFOLDER_DESCRIPTION"),
         skipRemote: true,
         skipReadOnly: true,
         noRootSelect: true,
@@ -947,7 +957,7 @@ function (ev) {
 
     });
 
-    this.chooseDeferFolder.registerCallback(
+    this.chooseFollowupFolder.registerCallback(
         DwtDialog.OK_BUTTON,
         this.handleSelectFolderOk,
         this
@@ -971,6 +981,7 @@ function (folder) {
     if (folder.id === String(ZmFolder.ID_INBOX)) {
 
         messageBox = appCtxt.getMsgDialog();
+        messageBox.reset();
 
         messageBox.setMessage(
             this.getMessage("ERROR_NOTINBOX"),
@@ -986,10 +997,10 @@ function (folder) {
 
     // Save folder to property pane
 
-    this.deferFolderInput.setValue(folder.name);
-    this.deferFolderInput.setData("deferFolderId", Number(folder.id));
+    this.followupFolderInput.setValue(folder.name);
+    this.followupFolderInput.setData("followupFolderId", Number(folder.id));
 
-    this.chooseDeferFolder.popdown();
+    this.chooseFollowupFolder.popdown();
 
 };
 
@@ -1004,11 +1015,11 @@ function (ev) {
 
     // Simply reuse the PickTagDialog
 
-    this.chooseDeferTag = appCtxt.getPickTagDialog();
+    this.chooseFollowupTag = appCtxt.getPickTagDialog();
 
-    this.chooseDeferTag.popup();
+    this.chooseFollowupTag.popup();
 
-    this.chooseDeferTag.registerCallback(
+    this.chooseFollowupTag.registerCallback(
         DwtDialog.OK_BUTTON,
         this.handleSelectTagOk,
         this
@@ -1027,10 +1038,10 @@ function (tag) {
 
     // Save tag to property pane
 
-    this.deferTagInput.setValue(tag.name);
-    this.deferTagInput.setData("deferTagId", Number(tag.id));
+    this.followupTagInput.setValue(tag.name);
+    this.followupTagInput.setData("followupTagId", Number(tag.id));
 
-    this.chooseDeferTag.popdown();
+    this.chooseFollowupTag.popdown();
 
 };
 
@@ -1113,6 +1124,7 @@ function (jsonlog, ev) {
     // Show formatted text in a simple message dialog
 
     messageBox = appCtxt.getMsgDialog();
+    messageBox.reset();
 
     messageBox.setMessage(logText);
 
@@ -1121,7 +1133,7 @@ function (jsonlog, ev) {
 };
 
 /**
- * Hook to add our "defer"-button to the main button toolbar
+ * Hook to add our "followup"-button to the main button toolbar
  *
  * @see ZmZimletBase.initializeToolbar
  */
@@ -1154,25 +1166,25 @@ function (
             this.handleMenuClick
         );
 
-        // Set defer button
+        // Set followup button
 
-        currentKey = this.lastUsedDefer;
+        currentKey = this.lastUsedFollowup;
 
         buttonParams = {
             tooltip: this.getMessage(
-                de_dieploegers_followupHandlerObject.deferTypes[
+                de_dieploegers_followupHandlerObject.followupTypes[
                     currentKey
                 ].toolTipKey
             ),
             image: this.getMessage(
-                de_dieploegers_followupHandlerObject.deferTypes[
+                de_dieploegers_followupHandlerObject.followupTypes[
                     currentKey
                 ].imageKey
             ),
             showImageInToolbar: true,
             showTextInToolbar: false,
             text: this.getMessage(
-                de_dieploegers_followupHandlerObject.deferTypes[
+                de_dieploegers_followupHandlerObject.followupTypes[
                     currentKey
                     ].textKey
             )
@@ -1183,16 +1195,16 @@ function (
         }
 
         this.toolbarButton = toolbar.createZimletOp(
-            "DE_DIEPLOEGERS_FOLLOWUP_DEFER",
+            "DE_DIEPLOEGERS_FOLLOWUP_FOLLOWUP",
             buttonParams
         );
 
         this.toolbarButton.setData(
-            "de_dieploegers_followupDeferKey",
+            "de_dieploegers_followupFollowupKey",
             currentKey
         );
 
-        // Set the menu button to the last used defer action
+        // Set the menu button to the last used followup action
 
         if (Number(this.lastUsedPIT) > 0) {
 
@@ -1208,7 +1220,7 @@ function (
 
         }
 
-        if ((de_dieploegers_followupHandlerObject.deferTypes[
+        if ((de_dieploegers_followupHandlerObject.followupTypes[
                 currentKey
             ].counter === 0) &&
             (
@@ -1219,7 +1231,7 @@ function (
             this.toolbarButton.setText(
                 AjxMessageFormat.format(
                     this.getMessage(
-                        de_dieploegers_followupHandlerObject.deferTypes[
+                        de_dieploegers_followupHandlerObject.followupTypes[
                             currentKey
                         ].detailKey
                     ),
@@ -1232,7 +1244,7 @@ function (
         }
 
         this.toolbarButton.setData(
-            "de_dieploegers_followupDeferKey",
+            "de_dieploegers_followupFollowupKey",
             currentKey
         );
 
@@ -1246,9 +1258,9 @@ function (
 
         this.toolbarMenuItems = {};
 
-        for (currentKey in de_dieploegers_followupHandlerObject.deferTypes) {
+        for (currentKey in de_dieploegers_followupHandlerObject.followupTypes) {
 
-            if (de_dieploegers_followupHandlerObject.deferTypes.hasOwnProperty(
+            if (de_dieploegers_followupHandlerObject.followupTypes.hasOwnProperty(
                 currentKey
             )) {
 
@@ -1258,15 +1270,15 @@ function (
 
                 this.toolbarMenuItems[currentKey].setText(
                     this.getMessage(
-                        de_dieploegers_followupHandlerObject.deferTypes[
+                        de_dieploegers_followupHandlerObject.followupTypes[
                             currentKey
                         ].textKey
                     )
                 );
 
-                // Add last used defer date to the "defer until"-action
+                // Add last used followup date to the "followup until"-action
 
-                if ((de_dieploegers_followupHandlerObject.deferTypes[
+                if ((de_dieploegers_followupHandlerObject.followupTypes[
                         currentKey
                     ].counter === 0) &&
                     (Number(this.lastUsedPIT) > 0)
@@ -1275,7 +1287,7 @@ function (
                     this.toolbarMenuItems[currentKey].setText(
                         AjxMessageFormat.format(
                             this.getMessage(
-                                de_dieploegers_followupHandlerObject.deferTypes[
+                                de_dieploegers_followupHandlerObject.followupTypes[
                                     currentKey
                                 ].detailKey
                             ),
@@ -1289,7 +1301,7 @@ function (
 
                 this.toolbarMenuItems[currentKey].setImage(
                     this.getMessage(
-                        de_dieploegers_followupHandlerObject.deferTypes[
+                        de_dieploegers_followupHandlerObject.followupTypes[
                             currentKey
                         ].imageKey
                     )
@@ -1297,14 +1309,14 @@ function (
 
                 this.toolbarMenuItems[currentKey].setToolTipContent(
                     this.getMessage(
-                        de_dieploegers_followupHandlerObject.deferTypes[
+                        de_dieploegers_followupHandlerObject.followupTypes[
                             currentKey
                         ].toolTipKey
                     )
                 );
 
                 this.toolbarMenuItems[currentKey].setData(
-                    "de_dieploegers_followupDeferKey",
+                    "de_dieploegers_followupFollowupKey",
                     currentKey
                 );
 
@@ -1322,12 +1334,12 @@ function (
 
         this.toolbarButton.setEnabled(false);
 
-        originalFunction = controller._resetOperations;
-
         /**
          * HACK, because Zimbra doesn't know better: If mails are selected,
          * enable the button
          */
+
+        originalFunction = controller._resetOperations;
 
         controller._resetOperations = function (parent, num) {
 
@@ -1342,7 +1354,7 @@ function (
                 (currentApp.getMailListController().getSelectionCount() > 0)
             ) {
 
-                parent.enable("DE_DIEPLOEGERS_FOLLOWUP_DEFER", true);
+                parent.enable("DE_DIEPLOEGERS_FOLLOWUP_FOLLOWUP", true);
 
             }
 
@@ -1369,7 +1381,11 @@ function(msg, oldMsg, msgView) {
 
     var metaData;
 
-    if (this.showInfoPane && !msg.isShared() && !msg.isInvite() && !msg.share
+    if (
+        this.showInfoPane &&
+        ! msg.isShared() &&
+        ! msg.isInvite() &&
+        ! msg.share
         ) {
 
         metaData = new ZmMetaData(appCtxt.getActiveAccount(), msg.id);
@@ -1398,11 +1414,12 @@ function (ev) {
 
     var messageBox;
 
-    if ((this.deferFolderInput.getData("deferFolderId") == -1) ||
-        (this.deferTagInput.getData("deferTagId") == -1)
+    if ((this.followupFolderInput.getData("followupFolderId") == -1) ||
+        (this.followupTagInput.getData("followupTagId") == -1)
     ) {
 
         messageBox = appCtxt.getMsgDialog();
+        messageBox.reset();
 
         messageBox.setMessage(
             this.getMessage("ERROR_MANDATORY"),
@@ -1418,16 +1435,17 @@ function (ev) {
 
     // Store selected folder
 
-    if (this.deferFolderInput.getData("deferFolderId") !== -1) {
+    if (this.followupFolderInput.getData("followupFolderId") !== -1) {
 
         // Check, if folder exists
 
         if (!appCtxt.getFolderTree().getById(
-                this.deferFolderInput.getData("deferFolderId")
+                this.followupFolderInput.getData("followupFolderId")
             )
         ) {
 
             messageBox = appCtxt.getMsgDialog();
+            messageBox.reset();
 
             messageBox.setMessage(
                 this.getMessage("ERROR_NOFOLDER"),
@@ -1442,34 +1460,35 @@ function (ev) {
         }
 
         this.setUserProperty(
-            "deferFolderId",
-            this.deferFolderInput.getData("deferFolderId"),
+            "followupFolderId",
+            this.followupFolderInput.getData("followupFolderId"),
             true
         );
 
         this.setUserProperty(
-            "deferFolderName",
-            this.deferFolderInput.getValue(),
+            "followupFolderName",
+            this.followupFolderInput.getValue(),
             true
         );
 
-        this.deferFolderId = this.deferFolderInput.getData("deferFolderId");
-        this.deferFolderName = this.deferFolderInput.getValue();
+        this.followupFolderId = this.followupFolderInput.getData("followupFolderId");
+        this.followupFolderName = this.followupFolderInput.getValue();
 
     }
 
     // Store selected tag
 
-    if (this.deferTagInput.getData("deferTagId") !== -1) {
+    if (this.followupTagInput.getData("followupTagId") !== -1) {
 
         // Check, if tag exists
 
         if (!appCtxt.getTagTree().getById(
-                this.deferTagInput.getData("deferTagId")
+                this.followupTagInput.getData("followupTagId")
             )
         ) {
 
             messageBox = appCtxt.getMsgDialog();
+            messageBox.reset();
 
             messageBox.setMessage(
                 this.getMessage("ERROR_NOTAG"),
@@ -1483,19 +1502,19 @@ function (ev) {
         }
 
         this.setUserProperty(
-            "deferTagId",
-            this.deferTagInput.getData("deferTagId"),
+            "followupTagId",
+            this.followupTagInput.getData("followupTagId"),
             true
         );
 
         this.setUserProperty(
-           "deferTagName",
-           this.deferTagInput.getValue(),
+           "followupTagName",
+           this.followupTagInput.getValue(),
            true
         );
 
-        this.deferTagId = this.deferTagInput.getData("deferTagId");
-        this.deferTagName = this.deferTagInput.getValue();
+        this.followupTagId = this.followupTagInput.getData("followupTagId");
+        this.followupTagName = this.followupTagInput.getValue();
 
     }
 
@@ -1524,7 +1543,7 @@ function (ev) {
 
     }
 
-    // Store "Show infopane?"-Selection
+    // Store "Use small icon?"-Selection
 
     if (this.useSmallIconCheck.isSelected()) {
 
@@ -1554,37 +1573,37 @@ function (ev) {
 };
 
 /**
- * Alter the message's date to reflect the PIT of the defer
+ * Alter the message's date to reflect the PIT of the followup
  * @param message    ZmMailMsg-Object of the message
- * @param deferCount Count of hours to defer
- * @param deferPIT   Unix Timestamp of Point in time
+ * @param followupCount Count of hours to followup
+ * @param followupPIT   Unix Timestamp of Point in time
  */
 
-de_dieploegers_followupHandlerObject.prototype.setDefer =
-function (message, deferCount, deferPIT) {
+de_dieploegers_followupHandlerObject.prototype.setFollowup =
+function (message, followupCount, followupPIT) {
 
     var today,
-        url, originalDate;
+        originalDate, soapDoc, m;
 
-    // defer message
+    // followup message
 
-    if (deferCount > 0) {
+    if (followupCount > 0) {
 
         // Convert "count of hours" into a point in time
 
         today = new Date();
 
-        deferPIT = new Date(today.getTime() + deferCount * 1000).getTime();
+        followupPIT = new Date(today.getTime() + followupCount * 1000).getTime();
 
     }
 
     // Call Server extension to set date
 
-    var soapDoc = AjxSoapDoc.create("ModifyMailDateRequest", "urn:followup");
+    soapDoc = AjxSoapDoc.create("ModifyMailDateRequest", "urn:followup"), m;
 
     m = soapDoc.set("m");
     m.setAttribute("id", message.id)
-    m.setAttribute("d", deferPIT);
+    m.setAttribute("d", followupPIT);
 
     originalDate = new Date(message.date);
 
@@ -1593,15 +1612,15 @@ function (message, deferCount, deferPIT) {
         asyncMode: true,
         callback: new AjxCallback(
             this,
-            this.deferMove,
-            [ message, deferPIT, originalDate ]
+            this.followupMove,
+            [ message, followupPIT, originalDate ]
         )
     });
 
 };
 
 /**
- * Show property pane
+ * Show configuration dialog
  *
  * @param canvas Canvas to show property pane in
  */
@@ -1609,11 +1628,14 @@ function (message, deferCount, deferPIT) {
 de_dieploegers_followupHandlerObject.prototype.singleClicked =
 function (canvas) {
 
-    var deferFolderComposite,
-        deferFolderDefaultId,
-        deferFolderDefaultName,
-        deferFolderSelect,
-        zimletProperties, deferTagDefaultId, deferTagDefaultName, deferTagComposite, deferTagSelect;
+    var followupFolderComposite,
+        followupFolderDefaultId,
+        followupFolderDefaultName,
+        followupFolderSelect,
+        zimletProperties, followupTagDefaultId,
+        followupTagDefaultName,
+        followupTagComposite,
+        followupTagSelect;
 
     if (canvas instanceof DwtMessageDialog) {
 
@@ -1640,89 +1662,89 @@ function (canvas) {
     zimletProperties = new DwtPropertySheet(this.propertyEditorView,
         'de_dieploegers_followup_additionalproperties');
 
-    // Defer Folder
+    // Followup Folder
 
-    deferFolderDefaultId = this.deferFolderId;
-    deferFolderDefaultName = this.deferFolderName;
+    followupFolderDefaultId = this.followupFolderId;
+    followupFolderDefaultName = this.followupFolderName;
 
-    if (!deferFolderDefaultId) {
+    if (!followupFolderDefaultId) {
 
-        deferFolderDefaultId = -1;
-        deferFolderDefaultName = "";
+        followupFolderDefaultId = -1;
+        followupFolderDefaultName = "";
 
     }
 
-    deferFolderComposite = new DwtComposite(this.propertyEditorView);
+    followupFolderComposite = new DwtComposite(this.propertyEditorView);
 
-    this.deferFolderInput = new DwtInputField({
-        parent: deferFolderComposite,
-        id: 'de_dieploegers_followup_deferFolder',
-        initialValue: deferFolderDefaultName
+    this.followupFolderInput = new DwtInputField({
+        parent: followupFolderComposite,
+        id: 'de_dieploegers_followup_followupFolder',
+        initialValue: followupFolderDefaultName
     });
 
-    this.deferFolderInput.setEnabled(false);
+    this.followupFolderInput.setEnabled(false);
 
-    this.deferFolderInput.setData("deferFolderId", deferFolderDefaultId);
+    this.followupFolderInput.setData("followupFolderId", followupFolderDefaultId);
 
-    deferFolderSelect = new DwtButton({
-        parent: deferFolderComposite
+    followupFolderSelect = new DwtButton({
+        parent: followupFolderComposite
     });
 
-    deferFolderSelect.addSelectionListener(
+    followupFolderSelect.addSelectionListener(
         new AjxListener(
             this,
             this.handleSelectFolder
         )
     );
 
-    deferFolderSelect.setText(this.getMessage("LABEL_SELECTDEFERFOLDER"));
+    followupFolderSelect.setText(this.getMessage("LABEL_SELECTFOLLOWUPFOLDER"));
 
     zimletProperties.addProperty(
-        this.getMessage("LABEL_DEFERFOLDER"),
-        deferFolderComposite,
+        this.getMessage("LABEL_FOLLOWUPFOLDER"),
+        followupFolderComposite,
         true
     );
 
-    // Defer Tag
+    // Followup Tag
 
-    deferTagDefaultId = this.deferTagId;
-    deferTagDefaultName = this.deferTagName;
+    followupTagDefaultId = this.followupTagId;
+    followupTagDefaultName = this.followupTagName;
 
-    if (!deferTagDefaultId) {
+    if (!followupTagDefaultId) {
 
-        deferTagDefaultId = -1;
-        deferTagDefaultName = "";
+        followupTagDefaultId = -1;
+        followupTagDefaultName = "";
 
     }
 
-    deferTagComposite = new DwtComposite(this.propertyEditorView);
+    followupTagComposite = new DwtComposite(this.propertyEditorView);
 
-    this.deferTagInput = new DwtInputField({
-        parent: deferTagComposite,
-        id: 'de_dieploegers_followup_deferTag',
-        initialValue: deferTagDefaultName
+    this.followupTagInput = new DwtInputField({
+        parent: followupTagComposite,
+        id: 'de_dieploegers_followup_followupTag',
+        initialValue: followupTagDefaultName
     });
 
-    this.deferTagInput.setEnabled(false);
+    this.followupTagInput.setEnabled(false);
 
-    this.deferTagInput.setData("deferTagId", deferTagDefaultId);
+    this.followupTagInput.setData("followupTagId", followupTagDefaultId);
 
-    deferTagSelect = new DwtButton({
-        parent: deferTagComposite
+    followupTagSelect = new DwtButton({
+        parent: followupTagComposite
     });
 
-    deferTagSelect.addSelectionListener(
+    followupTagSelect.addSelectionListener(
         new AjxListener(
             this,
             this.handleSelectTag
         )
     );
 
-    deferTagSelect.setText(this.getMessage("LABEL_SELECTDEFERTAG"));
+    followupTagSelect.setText(this.getMessage("LABEL_SELECTFOLLOWUPTAG"));
 
     zimletProperties.addProperty(
-        this.getMessage("LABEL_DEFERTAG"),
-        deferTagComposite,
+        this.getMessage("LABEL_FOLLOWUPTAG"),
+        followupTagComposite,
         true
     );
 
@@ -1775,20 +1797,20 @@ function (canvas) {
 };
 
 /**
- * Update the metadata of an once-deferred mail (is called after loading
+ * Update the metadata of a once-followup mail (is called after loading
  * the metadata)
  *
  * @param message      ZmMailMsg-Object of the mail
- * @param deferPIT     Current PIT
+ * @param followupPIT     Current PIT
  * @param originalDate Original date of the mail
  * @param result       Load Metadata-Result
  */
 
 de_dieploegers_followupHandlerObject.prototype.updateMetaData =
-function(message, deferPIT, originalDate, result) {
+function(message, followupPIT, originalDate, result) {
 
     var log,
-        response, deferMetaData, metadata;
+        response, followupMetaData, metadata;
 
     // Did we have any metadata?
 
@@ -1799,13 +1821,13 @@ function(message, deferPIT, originalDate, result) {
 
         if (response.meta && response.meta[0]) {
 
-            deferMetaData = response.meta[0]._attrs;
+            followupMetaData = response.meta[0]._attrs;
 
         } else {
 
             // No, create metadata
 
-            return this.createMetaData(message, deferPIT, originalDate);
+            return this.createMetaData(message, followupPIT, originalDate);
 
         }
 
@@ -1819,7 +1841,7 @@ function(message, deferPIT, originalDate, result) {
 
     try {
 
-        log = JSON.parse(deferMetaData.log);
+        log = JSON.parse(followupMetaData.log);
 
     } catch (e) {
 
@@ -1827,19 +1849,19 @@ function(message, deferPIT, originalDate, result) {
 
     }
 
-    // Add the current defer to the log and marshall the log in JSON
+    // Add the current followup to the log and marshall the log in JSON
 
     log.push({
         at: new Date().getTime(),
-        until: deferPIT
+        until: followupPIT
     });
 
-    deferMetaData.log = JSON.stringify(log);
+    followupMetaData.log = JSON.stringify(log);
 
     metadata = new ZmMetaData(appCtxt.getActiveAccount(), message.id);
 
     // Save the metadata
 
-    metadata.set("de_dieploegers_followup", deferMetaData);
+    metadata.set("de_dieploegers_followup", followupMetaData);
 
 };
