@@ -6,6 +6,12 @@ This zimlet (and the associated server extension and agent) provide the
 functionality to create followup E-Mails for the Zimbra Collaboration Server 
 versions 8.5 and up.
 
+## Prerequisites
+
+* [Zimbra Collaboration Server] [zimbra] versions 8.5 and up
+* [Python] [python] 2.7 (currently not Python 3 compatible!)
+* [Python zimbra library] [python-zimbra] versions 1.1-rc1 and up
+
 ## Components
 
 ### Zimlet
@@ -21,12 +27,12 @@ Clicking on the mail users can see, that the mail was deferred and can even
 lookup a history.
 
 This zimlet uses parts of the Inbox Zero-Zimlet made by andyc available at 
-the `Zimlet Gallery <http://gallery.zimbra.com/type/zimlet/inbox-zero-zimbra>`_ 
+the [Zimlet gallery] [originalzimlet] 
 (more information available at the 
-`Inbox Zero Website <http://inboxzero.com/inboxzero/>`_)
+[Inbox Zero Website] [inboxzero])
 
 It also includes the "json"-enabler by Doug Crockford available at its
-`Github-Repository <https://github.com/douglascrockford/JSON-js>`_. 
+[Github Repository] [json]. 
  
 It relies on the server extension to set the date on followup emails.
  
@@ -68,10 +74,19 @@ Create the directory "de.dieploegers.followup" in "/opt/zimbra/lib/ext" under
  
 ### Agent
 
-Copy the files into some directory on your zimbra server. Also, 
-install the python-zimbra library using
+Copy the files into some directory on your zimbra server (or another server, 
+that matches the prerequisites).  
+After that, start the agent using
 
-pip install python-zimbra
+python followup.py <Zimbra-Servername> <Administrative user> <Administrative 
+password>
+
+This will check all accounts on the server for followup mails.
+
+You can also specify
+
+* -o <domain>: Only users from this domain
+* -l <list>: Only users from this distribution list
 
 ## Building
 
@@ -108,3 +123,10 @@ properties, run this script:
     done
     
 Again, there may be errors.
+
+[zimbra]: http://www.zimbra.com
+[python]: http://www.python.org
+[python-zimbra]: https://github.com/Zimbra-Community/python-zimbra
+[originalzimlet]: http://gallery.zimbra.com/type/zimlet/inbox-zero-zimbra
+[inboxzero]: http://inboxzero.com/inboxzero/
+[json]: https://github.com/douglascrockford/JSON-js
