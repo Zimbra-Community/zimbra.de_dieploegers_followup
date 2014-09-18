@@ -904,7 +904,9 @@ function (message, removeTag, ev) {
 
         message.list.tagItems({
             items: message,
-            tagName: this.followupTagName,
+            tag: {
+                name: this.followupTagName
+            },
             doTag: false
         });
 
