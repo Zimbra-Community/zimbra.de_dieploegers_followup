@@ -230,7 +230,7 @@ if __name__ == "__main__":
                 raise Exception(
                     "Cannot find preauth key for domain %s. "
                     "Please use zmprov gdpak %s first." % (
-                        domain_part
+                        domain_part, domain_part
                     )
                 )
 
