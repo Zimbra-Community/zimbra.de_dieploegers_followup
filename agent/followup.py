@@ -124,7 +124,7 @@ if __name__ == "__main__":
         else:
 
             for user in get_members_response.get_response()[
-                "GetDistributionListResponse"]["dl"]["dlm"]:
+                    "GetDistributionListResponse"]["dl"]["dlm"]:
 
                 users.append(user["_content"])
 
@@ -170,7 +170,7 @@ if __name__ == "__main__":
         else:
 
             for user in get_users_response.get_response()[
-                "GetAllAccountsResponse"]["account"]:
+                    "GetAllAccountsResponse"]["account"]:
 
                 users.append(user["name"])
 
@@ -182,9 +182,9 @@ if __name__ == "__main__":
 
         (local_part, domain_part) = user.split("@")
 
-        if not domain_part in preauth_cache:
+        if domain_part not in preauth_cache:
 
-            logging.debug("Fetching preauth key for domain %s" % (domain_part))
+            logging.debug("Fetching preauth key for domain %s" % domain_part)
 
             get_pak_request = RequestXml()
 
@@ -218,8 +218,8 @@ if __name__ == "__main__":
 
             pak = ""
 
-            for parameter in get_pak_response.get_response()["GetDomainResponse"][
-                "domain"]["a"]:
+            for parameter in get_pak_response.get_response()[
+                    "GetDomainResponse"]["domain"]["a"]:
 
                 if parameter["n"] == "zimbraPreAuthKey":
 
@@ -270,7 +270,7 @@ if __name__ == "__main__":
         zimlet_props = {}
 
         for prop in get_account_response.get_response()[
-            "GetAccountResponse"]["account"]["a"]:
+                "GetAccountResponse"]["account"]["a"]:
 
             tmp_prop = re.match(
                 "^de_dieploegers_followup:([^:]*):(.*)$",
@@ -292,7 +292,7 @@ if __name__ == "__main__":
         logging.debug("Authenticating as user")
 
         user_token = auth.authenticate(
-            "https://%s/service/soap" % (server_name),
+            "https://%s/service/soap" % server_name,
             user,
             preauth_cache[domain_part]
         )
@@ -330,7 +330,17 @@ if __name__ == "__main__":
                 )
             )
 
-        mails = search_response.get_response()["SearchResponse"]["m"]
+        if "m" not in search_response.get_response()["SearchResponse"]:
+
+            # No mails found
+
+            logging.info("No mails found.")
+
+            mails = []
+
+        else:
+
+            mails = search_response.get_response()["SearchResponse"]["m"]
 
         if isinstance(mails, dict):
 
@@ -379,7 +389,7 @@ if __name__ == "__main__":
                         "Cannot tag mail: (%s) %s" % (
                             tag_response.get_fault_code(),
                             tag_response.get_fault_message()
-                         )
+                        )
                     )
 
                 logging.debug("Moving it back to inbox")
@@ -440,7 +450,7 @@ if __name__ == "__main__":
                         "Cannot set mail to unread: (%s) %s" % (
                             unread_response.get_fault_code(),
                             unread_response.get_fault_message()
-                       )
+                        )
                     )
 
             else:
