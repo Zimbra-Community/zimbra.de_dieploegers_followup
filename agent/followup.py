@@ -70,7 +70,7 @@ if __name__ == "__main__":
         parser.error("Cannot specify debug and quiet at the same time.")
 
     if options.quiet:
-        logging.basicConfig(level=logging.FATAL)
+        logging.basicConfig(level=logging.ERROR)
     elif options.debug:
         logging.basicConfig(level=logging.DEBUG)
     else:
@@ -230,7 +230,7 @@ if __name__ == "__main__":
                 raise Exception(
                     "Cannot find preauth key for domain %s. "
                     "Please use zmprov gdpak %s first." % (
-                        domain_part
+                        domain_part, domain_part
                     )
                 )
 
@@ -281,7 +281,9 @@ if __name__ == "__main__":
 
                 zimlet_props[tmp_prop.group(1)] = tmp_prop.group(2)
 
-        if len(zimlet_props.items()) == 0:
+        if len(zimlet_props.items()) == 0 or \
+            not "followupFolderId" in zimlet_props or \
+            not "followupTagName" in zimlet_props:
 
             # No zimlet properties set. Move on
 
