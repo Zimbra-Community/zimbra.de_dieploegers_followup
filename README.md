@@ -10,7 +10,7 @@ versions 8.5 and up.
 
 * [Zimbra Collaboration Server] [zimbra] versions 8.5 and up
 * [Python] [python] 2.7 (currently not Python 3 compatible!)
-* [Python zimbra library] [python-zimbra] versions 1.1-rc1 and up
+* [Python zimbra library] [python-zimbra] versions 2.0 and up
 
 ## Components
 
