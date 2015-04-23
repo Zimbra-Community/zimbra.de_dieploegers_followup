@@ -350,7 +350,7 @@ if __name__ == "__main__":
 
         for mail in mails:
 
-            logging.debug("Mail %s (%s)" % (mail["id"], mail["su"]["_content"]))
+            logging.debug("Mail %s (%s)" % (mail["id"], mail["su"]))
 
             mail_date = datetime.fromtimestamp(long(mail["d"])/1000)
 
@@ -360,7 +360,7 @@ if __name__ == "__main__":
 
                 logging.info("Mail %s is due for followup. (%s)" % (
                     mail["id"],
-                    mail["su"]["_content"]
+                    mail["su"]
                 ))
 
                 logging.debug("Tagging it.")
