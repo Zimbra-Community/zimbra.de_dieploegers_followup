@@ -12,8 +12,6 @@ import re
 from datetime import datetime
 
 from pythonzimbra.tools import auth
-from pythonzimbra.request_xml import RequestXml
-from pythonzimbra.response_xml import ResponseXml
 from pythonzimbra.communication import Communication
 
 ZIMBRA_INBOX_ID = 2
@@ -96,8 +94,7 @@ if __name__ == "__main__":
             options.distlist
         ))
 
-        get_members_request = RequestXml()
-        get_members_request.set_auth_token(token)
+        get_members_request = comm.gen_request(token=token)
         get_members_request.add_request(
             "GetDistributionListRequest",
             {
@@ -108,9 +105,7 @@ if __name__ == "__main__":
             },
             "urn:zimbraAdmin"
         )
-        get_members_response = ResponseXml()
-
-        comm.send_request(get_members_request, get_members_response)
+        get_members_response = comm.send_request(get_members_request)
 
         if get_members_response.is_fault():
 
@@ -130,8 +125,7 @@ if __name__ == "__main__":
 
     else:
 
-        get_users_request = RequestXml()
-        get_users_request.set_auth_token(token)
+        get_users_request = comm.gen_request(token=token)
 
         param = {}
 
@@ -154,9 +148,7 @@ if __name__ == "__main__":
             "urn:zimbraAdmin"
         )
 
-        get_users_response = ResponseXml()
-
-        comm.send_request(get_users_request, get_users_response)
+        get_users_response = comm.send_request(get_users_request)
 
         if get_users_response.is_fault():
 
@@ -186,9 +178,7 @@ if __name__ == "__main__":
 
             logging.debug("Fetching preauth key for domain %s" % domain_part)
 
-            get_pak_request = RequestXml()
-
-            get_pak_request.set_auth_token(token)
+            get_pak_request = comm.gen_request(token=token)
 
             get_pak_request.add_request(
                 "GetDomainRequest",
@@ -201,9 +191,7 @@ if __name__ == "__main__":
                 "urn:zimbraAdmin"
             )
 
-            get_pak_response = ResponseXml()
-
-            comm.send_request(get_pak_request, get_pak_response)
+            get_pak_response = comm.send_request(get_pak_request)
 
             if get_pak_response.is_fault():
 
@@ -238,9 +226,7 @@ if __name__ == "__main__":
 
         # Get zimlet properties
 
-        get_account_request = RequestXml()
-
-        get_account_request.set_auth_token(token)
+        get_account_request = comm.gen_request(token=token)
 
         get_account_request.add_request(
             "GetAccountRequest",
@@ -253,9 +239,7 @@ if __name__ == "__main__":
             "urn:zimbraAdmin"
         )
 
-        get_account_response = ResponseXml()
-
-        comm.send_request(get_account_request, get_account_response)
+        get_account_response = comm.send_request(get_account_request)
 
         if get_account_response.is_fault():
 
@@ -282,8 +266,8 @@ if __name__ == "__main__":
                 zimlet_props[tmp_prop.group(1)] = tmp_prop.group(2)
 
         if len(zimlet_props.items()) == 0 or \
-            not "followupFolderId" in zimlet_props or \
-            not "followupTagName" in zimlet_props:
+            "followupFolderId" not in zimlet_props or \
+                "followupTagName" not in zimlet_props:
 
             # No zimlet properties set. Move on
 
@@ -303,9 +287,7 @@ if __name__ == "__main__":
 
         logging.debug("Opening followup folder")
 
-        search_request = RequestXml()
-
-        search_request.set_auth_token(user_token)
+        search_request = comm.gen_request(token=user_token)
 
         search_request.add_request(
             "SearchRequest",
@@ -319,9 +301,7 @@ if __name__ == "__main__":
             "urn:zimbraMail"
         )
 
-        search_response = ResponseXml()
-
-        comm.send_request(search_request, search_response)
+        search_response = comm.send_request(search_request)
 
         if search_response.is_fault():
 
@@ -365,9 +345,7 @@ if __name__ == "__main__":
 
                 logging.debug("Tagging it.")
 
-                tag_request = RequestXml()
-
-                tag_request.set_auth_token(user_token)
+                tag_request = comm.gen_request(token=user_token)
 
                 tag_request.add_request(
                     "MsgActionRequest",
@@ -381,9 +359,7 @@ if __name__ == "__main__":
                     "urn:zimbraMail"
                 )
 
-                tag_response = ResponseXml()
-
-                comm.send_request(tag_request, tag_response)
+                tag_response = comm.send_request(tag_request)
 
                 if tag_response.is_fault():
 
@@ -396,9 +372,7 @@ if __name__ == "__main__":
 
                 logging.debug("Moving it back to inbox")
 
-                move_request = RequestXml()
-
-                move_request.set_auth_token(user_token)
+                move_request = comm.gen_request(token=user_token)
 
                 move_request.add_request(
                     "MsgActionRequest",
@@ -412,9 +386,7 @@ if __name__ == "__main__":
                     "urn:zimbraMail"
                 )
 
-                move_response = ResponseXml()
-
-                comm.send_request(move_request, move_response)
+                move_response = comm.send_request(move_request)
 
                 if move_response.is_fault():
 
@@ -427,9 +399,7 @@ if __name__ == "__main__":
 
                 logging.debug("Setting mail to unread")
 
-                unread_request = RequestXml()
-
-                unread_request.set_auth_token(user_token)
+                unread_request = comm.gen_request(token=user_token)
 
                 unread_request.add_request(
                     "MsgActionRequest",
@@ -442,9 +412,7 @@ if __name__ == "__main__":
                     "urn:zimbraMail"
                 )
 
-                unread_response = ResponseXml()
-
-                comm.send_request(unread_request, unread_response)
+                unread_response = comm.send_request(unread_request)
 
                 if unread_response.is_fault():
 
