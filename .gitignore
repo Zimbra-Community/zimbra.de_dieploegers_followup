@@ -38,3 +38,5 @@ build.properties
 build/
 dist/
 zimlet/de_dieploegers_followup.zip
+
+build.properties
