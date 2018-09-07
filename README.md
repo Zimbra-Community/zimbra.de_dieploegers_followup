@@ -19,7 +19,7 @@ versions 8.5 and up.
 The zimlet provides the basic user interface, that lets users create followup
  emails at different points of time. 
  
-The mail is mvoed to a user defined folder with its date set to the follow-up 
+The mail is moved to a user defined folder with its date set to the follow-up 
 time. When the follow-up time is due, the mail is moved 
 back to the inbox, tagged with a user defined tag and set to unread.
 
